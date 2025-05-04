@@ -1,17 +1,54 @@
+import { getUrlClicks } from "@/services/url";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router";
-import reactLogo from "../assets/react.svg";
+
+type UrlClick = {
+  slug: string;
+  total_clicks: string;
+  unique_visitors: string;
+};
 
 function SecondPage() {
+  const { data, isLoading, error } = useQuery<UrlClick[]>({
+    queryKey: ["urlclicks"],
+    queryFn: getUrlClicks,
+  });
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {(error as Error).message}</p>;
+
   return (
-    <div className="h-screen bg-black flex justify-center items-center flex-col space-x-4 text-white">
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} alt="React logo" className="w-36 h-36" />
-        </a>
-      </div>
-      <h1>Symph coding assignment page 2</h1>
-      <div className="py-4">
-        <Link to="/">Go to home page</Link>
+    <div className="h-screen w-full text-black bg-slate-50 flex flex-col justify-center items-center">
+      <h1 className="text-7xl font-bold bg-gradient-to-r from-slate-800 via-indigo-900 to-sky-700 bg-clip-text text-transparent">
+        Analytics
+      </h1>
+      <Link className="text-lg tracking-widest" to="/">
+        Return to Home
+      </Link>
+      <div className="grid grid-cols-3 gap-2 mt-5">
+        {data &&
+          data.map((urlClick) => (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-indigo-900">
+                  {urlClick.slug}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>
+                  Total Clicks:{" "}
+                  <span className="font-semibold">{urlClick.total_clicks}</span>
+                </p>
+                <p>
+                  Unique Visitors:
+                  <span className="font-semibold">
+                    {urlClick.unique_visitors}
+                  </span>
+                </p>
+              </CardContent>
+            </Card>
+          ))}
       </div>
     </div>
   );
