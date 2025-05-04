@@ -15,6 +15,18 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: dev-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   db-migration:
     container_name: db-migration
     depends_on:
@@ -40,6 +52,8 @@ services:
         condition: service_started
       db-migration:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     env_file:
       - .env
     ports:
@@ -47,6 +61,7 @@ services:
     environment:
       - NODE_ENV=development
       - DB_CONNECTION_URI=postgres://symph:symph@db/symph?sslmode=disable
+      - REDIS_URL=redis://redis:6379
       - TELEMETRY_ENABLED=false
     volumes:
       - ./server/src:/app/src
@@ -64,7 +79,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./client/src:/app/src/ # mounted whole src to avoid missing reload on new files
+      - ./client/src:/app/src/
       - ./client/public:/app/public
     env_file: .env
 
@@ -83,13 +98,13 @@ services:
 
   smtp-server:
     container_name: dev-smtp-server
-    image: lytrax/mailhog:latest # https://github.com/mailhog/MailHog/issues/353#issuecomment-821137362
+    image: lytrax/mailhog:latest
     restart: always
     logging:
-      driver: "none" # disable saving logs
+      driver: "none"
     ports:
-      - 1025:1025 # SMTP server
-      - 8025:8025 # Web UI
+      - 1025:1025
+      - 8025:8025
 
 volumes:
   postgres-data:
