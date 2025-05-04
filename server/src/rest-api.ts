@@ -4,42 +4,62 @@ import cors from "cors";
 dotenv.config();
 
 const app = express();
-import { db } from "./db/knex";
+import {
+  createShortUrl,
+  getShortUrl,
+  getUrlClicks,
+  logClick,
+} from "./services/url";
+import errorHandler from "./middleware/error-handler";
+import {
+  checkAndLogLimiter,
+  createUrlLimiter,
+} from "./middleware/rate-limiters";
 
 //middleware
 app.use(cors());
 app.use(express.json());
 
-/*
-##################################################
-||                                              ||
-||              Example endpoints               ||
-||                                              ||
-##################################################
-*/
+app.post("/shorten", createUrlLimiter, async (req, res, next) => {
+  try {
+    const result = await createShortUrl(req.body);
 
-// Root endpoint - Returns a simple hello world message and default client port
-app.get("/", async (_req, res) => {
-  res.json({ hello: "world", "client-default-port": 3000 });
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// GET /examples - Fetches all records from the example_foreign_table
-app.get("/examples", async (_req, res) => {
-  const docs = await db("example_foreign_table").select("*");
-  res.json({ docs });
+app.get("/slug/:slug", checkAndLogLimiter, async (req, res, next) => {
+  const { slug } = req.params;
+
+  try {
+    const url = await getShortUrl(slug);
+
+    logClick({
+      slug,
+      referer: req.get("referer"),
+      user_agent: req.get("user-agent"),
+      ip: req.ip,
+    }).catch(console.error);
+
+    res.status(201).json(url);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// POST /examples - Creates a new record with auth method and name, returns the created document
-app.post("/examples", async (req, res) => {
-  const { authMethod, name } = req.body;
-  const [doc] = await db("example_foreign_table")
-    .insert({
-      authMethod,
-      name,
-    })
-    .returning("*");
-  res.json({ doc });
+app.get("/urlclicks", async (req, res, next) => {
+  try {
+    const url = await getUrlClicks();
+
+    res.status(201).json(url);
+  } catch (err) {
+    next(err);
+  }
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

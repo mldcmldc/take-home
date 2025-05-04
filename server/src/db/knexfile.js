@@ -5,6 +5,9 @@ dotenv.config({ path: path.join(__dirname, "../../../.env")});
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+
+console.log('Using DB:', process.env.DB_CONNECTION_URI);
+
 module.exports = {
   development: {
     client: "postgres",
