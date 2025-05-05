@@ -15,7 +15,7 @@ export function convertExpiryToDate(expiry?: string) {
     case "1 hour":
       date = addHours(new Date(), 1);
       break;
-    case "24 hours":
+    case "1 day":
       date = addHours(new Date(), 24);
       break;
     case "7 days":

@@ -26,6 +26,7 @@ export function createUrlRepository(db: Knex) {
       });
     },
 
+    // can be improved further to add pagination
     getUrlClicks: async () => {
       return await db("url_clicks")
         .select("slug")
@@ -35,7 +36,8 @@ export function createUrlRepository(db: Knex) {
         .orderBy([
           { column: "total_clicks", order: "desc" },
           { column: "unique_visitors", order: "desc" },
-        ]);
+        ])
+        .limit(50);
     },
   };
 }

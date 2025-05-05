@@ -1,4 +1,4 @@
-export const BASE_URL = import.meta.env.VITE_API_URL;
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export async function shortenUrl({
   longUrl,
@@ -46,9 +46,13 @@ export async function getShortenedUrl(slug?: string) {
 }
 
 export async function getUrlClicks() {
-  const response = await fetch(`${BASE_URL}/urlclicks`);
+  try {
+    const response = await fetch(`${BASE_URL}/urlclicks`);
 
-  if (!response.ok) throw new Error("Failed to fetch");
+    if (!response.ok) throw new Error("Failed to fetch");
 
-  return response.json();
+    return response.json();
+  } catch (err) {
+    throw new Error("Failed to fetch");
+  }
 }
