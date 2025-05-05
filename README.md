@@ -1,3 +1,10 @@
+# What's New (Lester)
+
+- Added FE & BE
+- Added Redis
+- Added API Documentation (Swagger)
+  - Access through /api-docs
+
 # Symph Take Home Coding Assignment
 
 <!--toc:start-->
