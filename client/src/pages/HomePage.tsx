@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { convertExpiryToDate } from "@/lib/utils";
 import { Link } from "react-router";
 import { Label } from "@/components/ui/label";
+import { getUtmParams, normalizeURL } from "@/utils";
 
 type FormData = {
   longUrl: string;
@@ -31,25 +32,6 @@ function HomePage() {
     control,
     formState: { errors },
   } = useForm<FormData>();
-
-  function getUtmParams(url: string) {
-    const parsedUrl = new URL(url);
-    const params = new URLSearchParams(parsedUrl.search);
-
-    const utmSource = params.get("utm_source") ?? undefined;
-    const utmMedium = params.get("utm_medium") ?? undefined;
-    const utmCampaign = params.get("utm_campaign") ?? undefined;
-    const utmContent = params.get("utm_content") ?? undefined;
-    const utmTerm = params.get("utm_term") ?? undefined;
-
-    return {
-      utmSource,
-      utmMedium,
-      utmCampaign,
-      utmContent,
-      utmTerm,
-    };
-  }
 
   function handleCopyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
@@ -69,13 +51,13 @@ function HomePage() {
       return;
     }
 
-    const { utmSource, utmMedium, utmCampaign, utmContent, utmTerm } =
+    const { url, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } =
       getUtmParams(longUrl);
 
     const expiryDate = convertExpiryToDate(expiresAt);
 
     const response = await shortenUrl({
-      longUrl,
+      longUrl: url,
       slug,
       expiresAt: expiryDate,
       utmSource,
